@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Periodic Table of Sree's Mandarin</title>
+<style>
+  :root{ --paper:#E9EEE7; --tile:#F6F8F4; --ink:#1F2823; --glaze:#2F5D50;
+    --kiln:#B98735; --seal:#A63B2A; --mist:#5C6B60; --line:#C9D4C6; }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  body{margin:0; background:var(--paper); color:var(--ink);
+    font-family:'Iowan Old Style', Georgia, 'Noto Serif SC', serif; line-height:1.5;}
+  .wrap{max-width:780px; margin:0 auto; padding:20px 14px 90px;}
+  header{border-bottom:3px double var(--glaze); padding-bottom:12px;}
+  .eyebrow{font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--glaze); font-weight:700;}
+  h1{font-size:clamp(24px,6vw,38px); margin:6px 0 2px; line-height:1.12;}
+  h1 .cn{color:var(--glaze);}
+  .sub{color:var(--mist); font-size:13.5px;}
+  .how{background:var(--tile); border:1px solid var(--line); border-left:4px solid var(--kiln);
+    padding:10px 12px; font-size:13.5px; margin:14px 0;}
+  h2{font-size:13px; letter-spacing:.16em; text-transform:uppercase; color:var(--glaze);
+    border-bottom:1px solid var(--line); padding-bottom:6px; margin:28px 0 12px;}
+  input[type=text], textarea, select{font-family:inherit; font-size:15px; border:1.5px solid var(--line);
+    border-radius:5px; padding:9px 11px; background:#FBFCFA; color:var(--ink); width:100%;}
+  input:focus, textarea:focus, select:focus{outline:2px solid var(--glaze); border-color:var(--glaze);}
+  .btn{background:var(--glaze); color:#fff; border:none; border-radius:5px; padding:9px 16px;
+    font-size:14px; font-weight:700; cursor:pointer; font-family:inherit;}
+  .btn.ghost{background:transparent; color:var(--glaze); border:1.5px solid var(--glaze);}
+  .btn.warn{background:var(--seal);}
+  /* chips */
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin:10px 0;}
+  .fchip{border:1.5px solid var(--line); background:var(--tile); border-radius:14px;
+    padding:3px 12px; font-size:12.5px; cursor:pointer; color:var(--mist);}
+  .fchip.on{background:var(--glaze); color:#fff; border-color:var(--glaze); font-weight:700;}
+  /* element grid */
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(72px,1fr)); gap:6px;}
+  .el{background:var(--tile); border:1.5px solid var(--line); border-radius:4px;
+    padding:6px 4px 5px; cursor:pointer; position:relative; text-align:center;}
+  .el:active{transform:scale(.95);}
+  .el .val{position:absolute; top:3px; left:5px; font-size:9.5px; color:var(--mist); font-weight:700;}
+  .el .tone{position:absolute; top:1px; right:5px; font-size:12px; color:var(--seal); font-weight:700;}
+  .el .hz{font-size:24px; line-height:1.15; font-family:'Noto Serif SC','Songti SC',serif;}
+  .el .py{font-size:11.5px; color:var(--glaze); font-weight:700;}
+  .el .en{font-size:9.5px; color:var(--mist); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .el.sel{border-color:var(--glaze); background:#DCE8E0; box-shadow:0 0 0 2px var(--glaze);}
+  .more{margin:10px 0 0; text-align:center;}
+  /* sheet */
+  .sheet{position:sticky; bottom:0; background:var(--ink); color:var(--paper); z-index:5;
+    border-radius:8px 8px 0 0; padding:12px 14px; margin-top:14px; display:none; max-height:45vh; overflow:auto;}
+  .sheet.on{display:block;}
+  .sheet .big .hz{font-family:'Noto Serif SC',serif; font-size:24px;}
+  .sheet .gloss{color:#C9D4C6; font-size:13px; margin:2px 0 6px;}
+  .mol-line{padding:6px 0; border-top:1px solid #3A463E; font-size:14px;}
+  .mol-line b{font-family:'Noto Serif SC',serif; font-weight:600;}
+  .close{float:right; background:none; border:1px solid #556158; color:#C9D4C6;
+    border-radius:4px; font-size:12px; padding:2px 9px; cursor:pointer;}
+  /* molecules */
+  .banner{background:#DCE8E0; border:1px solid var(--glaze); border-radius:5px; padding:7px 11px;
+    font-size:13.5px; margin-bottom:9px; display:none; justify-content:space-between; align-items:center; gap:8px;}
+  .banner.on{display:flex;}
+  .mol{background:var(--tile); border:1px solid var(--line); border-radius:5px;
+    padding:8px 11px; margin-bottom:6px; cursor:pointer;}
+  .mol .top{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;}
+  .mol .hz{font-size:19px; font-family:'Noto Serif SC',serif;}
+  .mol .py{color:var(--glaze); font-weight:700; font-size:13.5px;}
+  .mol .en{color:var(--mist); font-size:12.5px; flex:1;}
+  .mol .form{display:none; margin-top:6px; padding-top:6px; border-top:1px dashed var(--line); font-size:13.5px;}
+  .mol.open .form{display:block;}
+  .atom-eq .cn{font-family:'Noto Serif SC',serif; font-weight:700;}
+  .chip{display:inline-block; font-size:9.5px; letter-spacing:.04em; padding:1px 7px; border-radius:9px;
+    font-weight:700; text-transform:uppercase; white-space:nowrap;}
+  .b-h{background:#DCE8E0; color:var(--glaze);} .b-p{background:#F2E4C8; color:#7A5A1E;}
+  .b-s{background:#E2E2DE; color:#5C6B60;} .b-v{background:#EBD9D4; color:var(--seal);}
+  .b-r{background:#E4DEED; color:#5B4E7A;} .b-o{background:#F6F8F4; color:var(--mist); border:1px solid var(--line);}
+  .b-l{background:#DDE7EE; color:#3C5A73;}
+  .b-d{background:#DFEDE9; color:#1F6E63;} .b-m{background:#F0E6D2; color:#8A6D14;} .b-g{background:#E6EDDf; color:#5B7F3C;}
+  .count{font-size:12px; color:var(--mist); margin-bottom:8px;}
+  .del{background:none; border:none; color:var(--seal); font-size:12px; cursor:pointer; font-family:inherit; padding:0 4px;}
+  /* sound cards */
+  .iso{background:var(--tile); border:2px solid var(--glaze); border-radius:6px; padding:12px; margin-bottom:12px;}
+  .iso h3{margin:0 0 6px; font-size:20px;}
+  .iso h3 small{font-size:12px; color:var(--mist); font-weight:400;}
+  .tones{display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px;}
+  .tcol{border:1px solid var(--line); border-radius:5px; padding:7px 9px; background:#FBFCFA;}
+  .tcol .t{font-size:17px; font-weight:700; color:var(--seal);}
+  .tcol .m{font-size:13px; padding:3px 0; border-top:1px dashed var(--line);}
+  .tcol .m .cn{font-family:'Noto Serif SC',serif;}
+  .tcol .m .anchor{color:var(--glaze); font-size:11.5px;}
+  /* doorway */
+  .door{background:var(--tile); border:2px dashed var(--kiln); border-radius:6px; padding:14px;}
+  .door label{font-size:13px; font-weight:700; display:block; margin:10px 0 4px;}
+  .hint{font-size:12.5px; color:var(--mist);}
+  .fixrow{background:#FBF4E6; border:1px solid var(--kiln); border-radius:5px; padding:9px; margin:8px 0; font-size:14px;}
+  .fixrow input{width:auto; min-width:130px; font-size:14px; padding:5px 8px; margin-left:6px;}
+  .ok{color:var(--glaze); font-weight:700; font-size:13.5px;}
+  .err{color:var(--seal); font-weight:700; font-size:13.5px;}
+  .exportbox{display:none; margin-top:10px;}
+  .exportbox.on{display:block;}
+  footer{margin-top:32px; font-size:12px; color:var(--mist); border-top:1px solid var(--line); padding-top:10px;}
+  .legend div{margin-bottom:7px; font-size:13.5px;}
+</style>
+</head>
+<body>
+<nav id="topnav" style="position:sticky;top:0;z-index:20;background:var(--ink);display:flex;gap:2px;overflow-x:auto;padding:0 8px;">
+  <a href="#sec-parts">Parts</a><a href="#sec-words">Words</a><a href="#sec-sounds">Sounds</a><a href="#sec-joins">How they join</a>
+</nav>
+<style>#topnav a{color:#E9EEE7;text-decoration:none;font-size:13px;padding:10px 12px;white-space:nowrap;font-weight:700;}
+#topnav a:active{background:var(--glaze);} h2{scroll-margin-top:48px;}</style>
+<div class="wrap">
+  <header>
+    <div class="eyebrow" id="counts">loading…</div>
+    <h1><span class="cn">元素周期表</span> <span style="font-size:.45em;color:var(--mist)">yuánsù zhōuqī biǎo</span><br>The Periodic Table of Sree's Mandarin</h1>
+    <p class="sub">Every word you know, split into its parts. The parts repeat; that's the whole trick.</p>
+  </header>
+
+  <div class="how"><b>Three things to know.</b> ① Tap any <b>part</b> to see every word it builds. ② Tap any <b>word</b> to see how it's put together. ③ The little number on a part = how many of your words it appears in. That's it.</div>
+
+  <h2 id="sec-parts">The Parts</h2>
+  <input type="text" id="q" placeholder="Search anything: pinyin, English, or 汉字 …">
+  <div class="chips" id="themechips"></div>
+  <div class="grid" id="grid" style="margin-top:8px"></div>
+  <div class="more"><button class="btn ghost" id="moreBtn">show all parts</button></div>
+
+  <h2 id="sec-words">The Words</h2>
+  <div class="count" id="molcount"></div>
+  <div class="banner" id="banner"><span id="bannertext"></span><button class="btn ghost" style="padding:4px 10px;font-size:12px" onclick="pick(sel)">clear</button></div>
+  <div id="mols"></div>
+
+  <h2 id="sec-sounds">Same Sound, Different Parts</h2>
+  <p class="hint" style="margin-top:-4px">These syllables each carry several unrelated parts. Don't panic: you almost never hear them alone. The <span style="color:var(--glaze);font-weight:700">green word</span> next to each part is where your ear actually meets it.</p>
+  <div id="isocards"></div>
+
+  <h2 id="sec-joins">How Words Join Up</h2>
+  <div class="legend">
+    <div><span class="chip b-h">kind + thing</span> &nbsp;The <b>last part is the thing</b>; everything before it says what kind. 学校 xuéxiào = the studying kind of school-place; 火车 huǒchē = the fire kind of vehicle; 鸡蛋 jīdàn = the chicken kind of egg; 红茶 hóngchá = the red kind of tea; 周末 zhōumò = the week\u2019s end. The kind can be a noun, an adjective, a color, a time; the rule never moves. Most words live here.</div>
+    <div><span class="chip b-p">twins glued</span> &nbsp;Two parts meaning nearly the same thing, or exact opposites, fused: 学习 xuéxí = learn + practise; 帮助 bāngzhù = help + assist; 买卖 mǎimài = buy + sell; 左右 zuǒyòu = left + right, meaning "approximately".</div>
+    <div><span class="chip b-v">do + what</span> &nbsp;An action carrying its usual target: 吃饭 chīfàn = eat + meal; 看书 kànshū = read + book; 上班 shàngbān = go-on + shift.</div>
+    <div><span class="chip b-r">do + result</span> &nbsp;An action welded to its outcome, including growing into a new state: 听懂 tīngdǒng = listen + understand; 找到 zhǎodào = search + succeed; 长大 zhǎngdà = grow + big.</div>
+    <div><span class="chip b-d">do + direction</span> &nbsp;An action plus where it moves: 上来 shànglái = come up; 回来 huílái = come back; 出来 chūlái = come out. (Your addition to the system.)</div>
+    <div><span class="chip b-m">person-maker</span> &nbsp;A tail that creates a person: 人 rén, 者 zhě, 生 shēng, 师 shī, 员 yuán, 家 jiā. 工人 gōngrén = worker; 医生 yīshēng = doctor; 记者 jìzhě = reporter. (Your addition.)</div>
+    <div><span class="chip b-g">place-maker</span> &nbsp;A tail that creates a place: 店 diàn, 馆 guǎn, 场 chǎng, 室 shì. 商店 shāngdiàn = shop; 饭馆 fànguǎn = restaurant; 教室 jiàoshì = classroom. (Your addition.)</div>
+    <div><span class="chip b-s">thing-maker</span> &nbsp;The little tail 子 zi that certifies an everyday object: 桌子 zhuōzi table, 杯子 bēizi cup, 帽子 màozi hat.</div>
+    <div><span class="chip b-l">sound loan</span> &nbsp;Borrowed noise, no inner logic: 咖啡 kāfēi coffee, 巧克力 qiǎokèlì chocolate, 沙发 shāfā sofa. Rare, and you can hear the foreignness.</div>
+    <div><span class="chip b-o">stands alone</span> &nbsp;A one-syllable word needing no partner: 来 lái, 去 qù, 水 shuǐ, 好 hǎo.</div>
+    <div style="margin-top:10px; padding-top:8px; border-top:1px dashed var(--line); color:var(--mist)">Note: counting phrases (三本书 sān běn shū) and negations (不会 bú huì) are <b>sentences being built</b>, not words being built, so they live in the grammar book, not this table. And 对-words like 反对 fǎnduì (oppose) and 面对 miànduì (face) are filed under do + what: the action aims at 对.</div>
+  </div>
+
+  <footer>Built from Sree's lesson corpus, Nov 2024 – Jul 2026, plus everything added through the doorway. Numbers on parts recount themselves automatically as the table grows.</footer>
+</div>
+
+<script>
+// [hanzi, pinyin, english, bond, parts 'char:py:gloss,...', theme]
+// bonds: h = kind+thing (last part is the thing), p = twins glued, v = do + what,
+//        r = do + result, s = thing-maker zi, o = stands alone, l = sound loan
+const MOL = [
+// ---- PEOPLE ----
+['我','wǒ','I, me','o','我:wǒ:I; me','People'],
+['你','nǐ','you','o','你:nǐ:you','People'],
+['他','tā','he (她 she, 它 it)','o','他:tā:he; she; it','People'],
+['我们','wǒmen','we, us','s','我:wǒ:I; me,们:men:group-maker','People'],
+['你们','nǐmen','you all','s','你:nǐ:you,们:men:group-maker','People'],
+['他们','tāmen','they','s','他:tā:he; she; it,们:men:group-maker','People'],
+['老师','lǎoshī','teacher','h','老:lǎo:old; venerable,师:shī:master','People'],
+['朋友','péngyou','friend','p','朋:péng:companion,友:yǒu:friend','People'],
+['爸爸','bàba','father','p','爸:bà:dad','People'],
+['妈妈','māma','mother','p','妈:mā:mom','People'],
+['儿子','érzi','son','s','儿:ér:child; son,子:zi:thing-maker','People'],
+['女儿','nǚ\u2019ér','daughter','h','女:nǚ:female,儿:ér:child; son','People'],
+['老婆','lǎopó','wife','h','老:lǎo:old; venerable,婆:pó:woman; granny','People'],
+['老公','lǎogōng','husband','h','老:lǎo:old; venerable,公:gōng:male; public','People'],
+['孩子','háizi','child','s','孩:hái:child,子:zi:thing-maker','People'],
+['姐姐','jiějie','elder sister','p','姐:jiě:elder sister','People'],
+['妹妹','mèimei','younger sister','p','妹:mèi:younger sister','People'],
+['哥哥','gēge','elder brother','p','哥:gē:elder brother','People'],
+['弟弟','dìdi','younger brother','p','弟:dì:younger brother','People'],
+['家人','jiārén','family','h','家:jiā:home; family,人:rén:person','People'],
+['客人','kèrén','guest','h','客:kè:guest,人:rén:person','People'],
+['客户','kèhù','customer, client','h','客:kè:guest,户:hù:household; account','People'],
+['人','rén','person','o','人:rén:person','People'],
+['大家','dàjiā','everyone','h','大:dà:big,家:jiā:home; family','People'],
+// ---- JOBS ----
+['服务员','fúwùyuán','waiter, server','m','服:fú:serve,务:wù:duty; affairs,员:yuán:staff member','Jobs'],
+['医生','yīshēng','doctor','m','医:yī:heal; medicine,生:shēng:person; born','Jobs'],
+['律师','lǜshī','lawyer','m','律:lǜ:law,师:shī:master','Jobs'],
+['外科医生','wàikē yīshēng','surgeon','h','外:wài:outside,科:kē:branch; discipline,医:yī:heal; medicine,生:shēng:person; born','Jobs'],
+['护士','hùshi','nurse','m','护:hù:protect,士:shì:trained person','Jobs'],
+['牙医','yáyī','dentist','h','牙:yá:tooth,医:yī:heal; medicine','Jobs'],
+['教授','jiàoshòu','professor','p','教:jiào:teach,授:shòu:confer; instruct','Jobs'],
+['审计师','shěnjìshī','auditor','m','审:shěn:examine,计:jì:count; plan,师:shī:master','Jobs'],
+['会计','kuàijì','accountant','h','会:kuài:account (special reading),计:jì:count; plan','Jobs'],
+['总裁','zǒngcái','CEO','h','总:zǒng:chief; overall,裁:cái:decide; cut','Jobs'],
+['经理','jīnglǐ','manager','p','经:jīng:manage; pass through,理:lǐ:order; manage','Jobs'],
+['科学家','kēxuéjiā','scientist','m','科:kē:branch; discipline,学:xué:study,家:jiā:expert (also home)','Jobs'],
+['记者','jìzhě','journalist','m','记:jì:record,者:zhě:one who','Jobs'],
+['警察','jǐngchá','police officer','p','警:jǐng:alert; guard,察:chá:inspect','Jobs'],
+['法官','fǎguān','judge','h','法:fǎ:law,官:guān:official','Jobs'],
+['工程师','gōngchéngshī','engineer','m','工:gōng:work,程:chéng:procedure,师:shī:master','Jobs'],
+['政治家','zhèngzhìjiā','politician','m','政:zhèng:governance,治:zhì:govern,家:jiā:expert (also home)','Jobs'],
+['政府','zhèngfǔ','government','h','政:zhèng:governance,府:fǔ:office; seat','Jobs'],
+['士兵','shìbīng','soldier','p','士:shì:trained person,兵:bīng:soldier; weapon','Jobs'],
+['司机','sījī','driver','v','司:sī:operate,机:jī:machine','Jobs'],
+['老板','lǎobǎn','boss','h','老:lǎo:old; venerable,板:bǎn:board; proprietor','Jobs'],
+// ---- NUMBERS ----
+['零','líng','zero','o','零:líng:zero','Numbers'],
+['一','yī','one','o','一:yī:one','Numbers'],
+['两','liǎng','two (before things)','o','两:liǎng:two; pair','Numbers'],
+['二','èr','two (counting)','o','二:èr:two','Numbers'],
+['三','sān','three','o','三:sān:three','Numbers'],
+['四','sì','four','o','四:sì:four','Numbers'],
+['五','wǔ','five','o','五:wǔ:five','Numbers'],
+['六','liù','six','o','六:liù:six','Numbers'],
+['七','qī','seven','o','七:qī:seven','Numbers'],
+['八','bā','eight','o','八:bā:eight','Numbers'],
+['九','jiǔ','nine','o','九:jiǔ:nine','Numbers'],
+['十','shí','ten','o','十:shí:ten','Numbers'],
+['百','bǎi','hundred','o','百:bǎi:hundred','Numbers'],
+['千','qiān','thousand','o','千:qiān:thousand','Numbers'],
+['万','wàn','ten thousand','o','万:wàn:ten thousand','Numbers'],
+['第','dì','ordinal-maker (di + number)','o','第:dì:ordinal-maker','Numbers'],
+['半','bàn','half','o','半:bàn:half','Numbers'],
+['几','jǐ','how many; several','o','几:jǐ:how many; several','Numbers'],
+['一些','yìxiē','some','h','一:yī:one,些:xiē:a few','Numbers'],
+// ---- MEASURE ----
+['个','gè','general counter','o','个:gè:general counter','Measure'],
+['本','běn','counter for books','o','本:běn:root; book counter','Measure'],
+['杯','bēi','cup (of)','o','杯:bēi:cup','Measure'],
+['块','kuài','yuan; lump (元 yuán formal)','o','块:kuài:lump; yuan','Measure'],
+['毛','máo','10 cents; fur','o','毛:máo:fur; 10 cents','Measure'],
+['件','jiàn','counter for tops, matters','o','件:jiàn:item counter','Measure'],
+['条','tiáo','counter for long bendy things','o','条:tiáo:strip; long counter','Measure'],
+['张','zhāng','counter for flat things','o','张:zhāng:sheet; spread','Measure'],
+['只','zhī','counter for animals','o','只:zhī:animal counter','Measure'],
+['匹','pǐ','counter for horses','o','匹:pǐ:horse counter','Measure'],
+['句','jù','counter for sentences','o','句:jù:sentence','Measure'],
+['首','shǒu','counter for songs, poems','o','首:shǒu:head; song counter','Measure'],
+['家','jiā','counter for companies; home','o','家:jiā:home; family','Measure'],
+['顿','dùn','counter for meals','o','顿:dùn:meal counter; pause','Measure'],
+['双','shuāng','pair of','o','双:shuāng:pair','Measure'],
+['根','gēn','counter for thin sticks','o','根:gēn:root; stick counter','Measure'],
+['斤','jīn','half kilo','o','斤:jīn:500 g','Measure'],
+['公斤','gōngjīn','kilogram','h','公:gōng:metric; public,斤:jīn:500 g','Measure'],
+['次','cì','time, occurrence','o','次:cì:occurrence','Measure'],
+['小时','xiǎoshí','hour','h','小:xiǎo:small,时:shí:time','Measure'],
+['分钟','fēnzhōng','minute','h','分:fēn:divide; minute,钟:zhōng:clock; bell','Measure'],
+['口','kǒu','mouth; family member counter','o','口:kǒu:mouth; opening','Measure'],
+['公里','gōnglǐ','kilometer','h','公:gōng:metric; public,里:lǐ:mile; inside','Measure'],
+['盘','pán','plate of; game of chess','o','盘:pán:plate; tray','Measure'],
+// ---- TIME ----
+['今天','jīntiān','today','h','今:jīn:now; this,天:tiān:day; sky','Time'],
+['昨天','zuótiān','yesterday','h','昨:zuó:yester-,天:tiān:day; sky','Time'],
+['明天','míngtiān','tomorrow','h','明:míng:bright; next,天:tiān:day; sky','Time'],
+['后天','hòutiān','day after tomorrow','h','后:hòu:behind; after,天:tiān:day; sky','Time'],
+['前天','qiántiān','day before yesterday','h','前:qián:front; before,天:tiān:day; sky','Time'],
+['今年','jīnnián','this year','h','今:jīn:now; this,年:nián:year','Time'],
+['去年','qùnián','last year','h','去:qù:go,年:nián:year','Time'],
+['明年','míngnián','next year','h','明:míng:bright; next,年:nián:year','Time'],
+['早上','zǎoshang','early morning','h','早:zǎo:early,上:shàng:up; on','Time'],
+['上午','shàngwǔ','late morning','h','上:shàng:up; on,午:wǔ:noon','Time'],
+['中午','zhōngwǔ','noon','h','中:zhōng:middle,午:wǔ:noon','Time'],
+['下午','xiàwǔ','afternoon','h','下:xià:down; off,午:wǔ:noon','Time'],
+['晚上','wǎnshang','evening','h','晚:wǎn:late; evening,上:shàng:up; on','Time'],
+['现在','xiànzài','now','p','现:xiàn:present; appear,在:zài:at; being','Time'],
+['已经','yǐjīng','already','p','已:yǐ:already,经:jīng:pass through','Time'],
+['最近','zuìjìn','recently','h','最:zuì:most,近:jìn:near','Time'],
+['有时候','yǒushíhou','sometimes','v','有:yǒu:have; there is,时:shí:time,候:hòu:moment','Time'],
+['一直','yìzhí','always, all along','h','一:yī:one,直:zhí:straight','Time'],
+['常常','chángcháng','often','p','常:cháng:usual','Time'],
+['星期','xīngqī','week (+ 1-6, 日 Sunday)','h','星:xīng:star,期:qī:period','Time'],
+['春天','chūntiān','spring','h','春:chūn:spring,天:tiān:day; sky','Time'],
+['夏天','xiàtiān','summer','h','夏:xià:summer,天:tiān:day; sky','Time'],
+['秋天','qiūtiān','autumn','h','秋:qiū:autumn,天:tiān:day; sky','Time'],
+['冬天','dōngtiān','winter','h','冬:dōng:winter,天:tiān:day; sky','Time'],
+['时间','shíjiān','time','p','时:shí:time,间:jiān:interval; between','Time'],
+// ---- FOOD ----
+['吃','chī','to eat','o','吃:chī:eat','Food'],
+['喝','hē','to drink','o','喝:hē:drink','Food'],
+['好吃','hǎochī','delicious','h','好:hǎo:good,吃:chī:eat','Food'],
+['早饭','zǎofàn','breakfast','h','早:zǎo:early,饭:fàn:meal; rice','Food'],
+['午饭','wǔfàn','lunch','h','午:wǔ:noon,饭:fàn:meal; rice','Food'],
+['晚饭','wǎnfàn','dinner','h','晚:wǎn:late; evening,饭:fàn:meal; rice','Food'],
+['素食','sùshí','vegetarian food','h','素:sù:plain; veg,食:shí:food; eat','Food'],
+['米饭','mǐfàn','cooked rice','h','米:mǐ:rice grain,饭:fàn:meal; rice','Food'],
+['面','miàn','noodles; flour','o','面:miàn:noodles; face; surface','Food'],
+['苹果','píngguǒ','apple','h','苹:píng:apple,果:guǒ:fruit','Food'],
+['西瓜','xīguā','watermelon','h','西:xī:west,瓜:guā:melon','Food'],
+['香蕉','xiāngjiāo','banana','h','香:xiāng:fragrant,蕉:jiāo:banana plant','Food'],
+['牛油果','niúyóuguǒ','avocado','h','牛:niú:cow,油:yóu:oil,果:guǒ:fruit','Food'],
+['辣','là','spicy','o','辣:là:spicy','Food'],
+['甜','tián','sweet','o','甜:tián:sweet','Food'],
+['酸','suān','sour','o','酸:suān:sour','Food'],
+['苦','kǔ','bitter','o','苦:kǔ:bitter','Food'],
+['饭馆','fànguǎn','restaurant','g','饭:fàn:meal; rice,馆:guǎn:hall','Food'],
+['菜单','càidān','menu','h','菜:cài:dish; vegetable,单:dān:list; single','Food'],
+['点菜','diǎncài','to order food','v','点:diǎn:point; order,菜:cài:dish; vegetable','Food'],
+['买单','mǎidān','the bill','v','买:mǎi:buy,单:dān:list; single','Food'],
+['大厨','dàchú','chef','h','大:dà:big,厨:chú:kitchen','Food'],
+['特色菜','tèsècài','house special','h','特:tè:special,色:sè:color; character,菜:cài:dish; vegetable','Food'],
+['红烧肉','hóngshāoròu','red-braised pork','h','红:hóng:red,烧:shāo:braise; burn,肉:ròu:meat','Food'],
+['难吃','nánchī','not tasty','h','难:nán:hard; bad-to,吃:chī:eat','Food'],
+['健康','jiànkāng','healthy','p','健:jiàn:robust,康:kāng:wellbeing','Food'],
+['饼干','bǐnggān','cookies','h','饼:bǐng:flat cake,干:gān:dry','Food'],
+// ---- DRINK ----
+['茶','chá','tea','o','茶:chá:tea','Drink'],
+['咖啡','kāfēi','coffee','l','咖:kā:(sound),啡:fēi:(sound)','Drink'],
+['奶茶','nǎichá','milk tea','h','奶:nǎi:milk,茶:chá:tea','Drink'],
+['水','shuǐ','water','o','水:shuǐ:water','Drink'],
+['热','rè','hot','o','热:rè:hot','Drink'],
+['常温','chángwēn','room temperature','h','常:cháng:usual,温:wēn:warm; temperature','Drink'],
+['加冰','jiābīng','add ice','v','加:jiā:add,冰:bīng:ice','Drink'],
+['口味','kǒuwèi','flavor','h','口:kǒu:mouth; opening,味:wèi:taste','Drink'],
+['巧克力','qiǎokèlì','chocolate','l','巧:qiǎo:(sound; clever),克:kè:(sound; gram),力:lì:(sound; strength)','Drink'],
+['草莓','cǎoméi','strawberry','h','草:cǎo:grass,莓:méi:berry','Drink'],
+['芒果','mángguǒ','mango','h','芒:máng:mango (sound),果:guǒ:fruit','Drink'],
+['草药茶','cǎoyàochá','herbal tea','h','草:cǎo:grass,药:yào:medicine,茶:chá:tea','Drink'],
+['姜茶','jiāngchá','ginger tea','h','姜:jiāng:ginger,茶:chá:tea','Drink'],
+['打包','dǎbāo','take away, pack up','v','打:dǎ:hit; do,包:bāo:wrap; bag','Drink'],
+];
+
+const MOL2 = [
+// ---- SHOP ----
+['买','mǎi','to buy','o','买:mǎi:buy','Shop'],
+['卖','mài','to sell','o','卖:mài:sell','Shop'],
+['贵','guì','expensive','o','贵:guì:expensive; honored','Shop'],
+['便宜','piányi','cheap','p','便:pián:convenient (special reading),宜:yí:suitable','Shop'],
+['价格','jiàgé','price','p','价:jià:price,格:gé:standard; grid','Shop'],
+['付','fù','to pay','o','付:fù:pay','Shop'],
+['微信','wēixìn','WeChat','h','微:wēi:tiny,信:xìn:message; trust','Shop'],
+['支付宝','zhīfùbǎo','Alipay','h','支:zhī:support; pay out,付:fù:pay,宝:bǎo:treasure','Shop'],
+['现金','xiànjīn','cash','h','现:xiàn:present; appear,金:jīn:gold; money','Shop'],
+['刷卡','shuākǎ','pay by card','v','刷:shuā:swipe; brush,卡:kǎ:card (sound loan)','Shop'],
+['衣服','yīfu','clothes','p','衣:yī:garment,服:fú:clothing; serve','Shop'],
+['外套','wàitào','coat','h','外:wài:outside,套:tào:cover; set','Shop'],
+['衬衫','chènshān','shirt','p','衬:chèn:lining,衫:shān:shirt','Shop'],
+['裤子','kùzi','trousers','s','裤:kù:trousers,子:zi:thing-maker','Shop'],
+['鞋子','xiézi','shoes','s','鞋:xié:shoe,子:zi:thing-maker','Shop'],
+['超市','chāoshì','supermarket','h','超:chāo:super; exceed,市:shì:market; city','Shop'],
+['商店','shāngdiàn','shop','g','商:shāng:commerce,店:diàn:shop','Shop'],
+['小费','xiǎofèi','tip','h','小:xiǎo:small,费:fèi:fee','Shop'],
+['东西','dōngxi','thing, stuff','p','东:dōng:east,西:xī:west','Shop'],
+['质量','zhìliàng','quality','p','质:zhì:substance,量:liàng:quantity','Shop'],
+['生意','shēngyi','business, trade','h','生:shēng:person; born,意:yì:meaning; intent','Shop'],
+// ---- TRAVEL ----
+['飞机','fēijī','airplane','h','飞:fēi:fly,机:jī:machine','Travel'],
+['出租车','chūzūchē','taxi','h','出:chū:out,租:zū:rent,车:chē:vehicle','Travel'],
+['地铁','dìtiě','subway','h','地:dì:ground; place,铁:tiě:iron','Travel'],
+['公交车','gōngjiāochē','bus','h','公:gōng:metric; public,交:jiāo:exchange,车:chē:vehicle','Travel'],
+['高铁','gāotiě','high-speed rail','h','高:gāo:tall; high,铁:tiě:iron','Travel'],
+['自行车','zìxíngchē','bicycle','h','自:zì:self,行:xíng:go; walk,车:chē:vehicle','Travel'],
+['火车','huǒchē','train','h','火:huǒ:fire,车:chē:vehicle','Travel'],
+['机场','jīchǎng','airport','g','机:jī:machine,场:chǎng:open field','Travel'],
+['出口','chūkǒu','exit; exports','v','出:chū:out,口:kǒu:mouth; opening','Travel'],
+['入口','rùkǒu','entrance','v','入:rù:enter,口:kǒu:mouth; opening','Travel'],
+['到','dào','to arrive','o','到:dào:arrive; to','Travel'],
+['来','lái','to come','o','来:lái:come','Travel'],
+['去','qù','to go','o','去:qù:go','Travel'],
+['回','huí','to return','o','回:huí:return','Travel'],
+['行李','xíngli','luggage','h','行:xíng:go; walk,李:lǐ:plum; baggage','Travel'],
+['酒店','jiǔdiàn','hotel','g','酒:jiǔ:alcohol,店:diàn:shop','Travel'],
+['房间','fángjiān','room','h','房:fáng:house; room,间:jiān:interval; between','Travel'],
+['入住','rùzhù','to check in','v','入:rù:enter,住:zhù:live; stay','Travel'],
+['门票','ménpiào','entry ticket','h','门:mén:door,票:piào:ticket','Travel'],
+['车票','chēpiào','transport ticket','h','车:chē:vehicle,票:piào:ticket','Travel'],
+['预订','yùdìng','to reserve','h','预:yù:in advance,订:dìng:book; fix','Travel'],
+['登机','dēngjī','to board a plane','v','登:dēng:mount; board,机:jī:machine','Travel'],
+['护照','hùzhào','passport','h','护:hù:protect,照:zhào:photo; shine','Travel'],
+['旅游','lǚyóu','tourism, travel','p','旅:lǚ:journey,游:yóu:roam; swim','Travel'],
+['出差','chūchāi','business trip','v','出:chū:out,差:chāi:errand','Travel'],
+['过山车','guòshānchē','roller coaster','h','过:guò:pass; cross,山:shān:mountain,车:chē:vehicle','Travel'],
+['排队','páiduì','to queue','v','排:pái:line up,队:duì:line; team','Travel'],
+// ---- PLACE ----
+['上','shàng','up, on; previous','o','上:shàng:up; on','Place'],
+['下','xià','down, under; next','o','下:xià:down; off','Place'],
+['前','qián','front, before','o','前:qián:front; before','Place'],
+['后','hòu','back, after','o','后:hòu:behind; after','Place'],
+['左','zuǒ','left','o','左:zuǒ:left','Place'],
+['右','yòu','right','o','右:yòu:right','Place'],
+['里','lǐ','inside','o','里:lǐ:mile; inside','Place'],
+['外','wài','outside','o','外:wài:outside','Place'],
+['东','dōng','east','o','东:dōng:east','Place'],
+['西','xī','west','o','西:xī:west','Place'],
+['南','nán','south','o','南:nán:south','Place'],
+['北','běi','north','o','北:běi:north','Place'],
+['这里','zhèlǐ','here','h','这:zhè:this,里:lǐ:mile; inside','Place'],
+['那里','nàlǐ','there','h','那:nà:that,里:lǐ:mile; inside','Place'],
+['附近','fùjìn','nearby','p','附:fù:attach,近:jìn:near','Place'],
+['远','yuǎn','far','o','远:yuǎn:far','Place'],
+['近','jìn','near','o','近:jìn:near','Place'],
+['楼上','lóushàng','upstairs','h','楼:lóu:building; floor,上:shàng:up; on','Place'],
+['楼下','lóuxià','downstairs','h','楼:lóu:building; floor,下:xià:down; off','Place'],
+['往','wǎng','towards','o','往:wǎng:towards','Place'],
+['北京','Běijīng','Beijing','h','北:běi:north,京:jīng:capital','Place'],
+['上海','Shànghǎi','Shanghai','h','上:shàng:up; on,海:hǎi:sea','Place'],
+['中国','Zhōngguó','China','h','中:zhōng:middle,国:guó:country','Place'],
+['印度','Yìndù','India','l','印:yìn:(sound; print),度:dù:(sound; degree)','Place'],
+['长城','Chángchéng','the Great Wall','h','长:cháng:long,城:chéng:wall; city','Place'],
+['公园','gōngyuán','park','h','公:gōng:metric; public,园:yuán:garden','Place'],
+['学校','xuéxiào','school','h','学:xué:study,校:xiào:school','Place'],
+['公司','gōngsī','company','h','公:gōng:metric; public,司:sī:operate','Place'],
+['图书馆','túshūguǎn','library','g','图:tú:chart,书:shū:book,馆:guǎn:hall','Place'],
+['电影院','diànyǐngyuàn','cinema','g','电:diàn:electric,影:yǐng:shadow,院:yuàn:courtyard; institute','Place'],
+['广场','guǎngchǎng','public square','g','广:guǎng:broad,场:chǎng:open field','Place'],
+['厕所','cèsuǒ','toilet','g','厕:cè:latrine,所:suǒ:place','Place'],
+// ---- BODY ----
+['身体','shēntǐ','body, health','p','身:shēn:body,体:tǐ:body; form','Body'],
+['头','tóu','head','o','头:tóu:head','Body'],
+['脸','liǎn','face','o','脸:liǎn:face','Body'],
+['眼睛','yǎnjing','eyes','p','眼:yǎn:eye,睛:jīng:eyeball','Body'],
+['耳朵','ěrduo','ears','s','耳:ěr:ear,朵:duǒ:flower counter; lobe','Body'],
+['嘴巴','zuǐba','mouth','s','嘴:zuǐ:mouth,巴:bā:tail syllable','Body'],
+['鼻子','bízi','nose','s','鼻:bí:nose,子:zi:thing-maker','Body'],
+['手','shǒu','hand','o','手:shǒu:hand','Body'],
+['腿','tuǐ','legs','o','腿:tuǐ:leg','Body'],
+['肚子','dùzi','belly','s','肚:dù:belly,子:zi:thing-maker','Body'],
+['背部','bèibù','back','h','背:bèi:back (body),部:bù:part; section','Body'],
+['头发','tóufa','hair','h','头:tóu:head,发:fà:hair','Body'],
+['牙齿','yáchǐ','teeth','p','牙:yá:tooth,齿:chǐ:tooth','Body'],
+['疼','téng','to hurt, ache','o','疼:téng:ache','Body'],
+['受伤','shòushāng','injured','v','受:shòu:receive,伤:shāng:wound','Body'],
+['病','bìng','sick, illness','o','病:bìng:illness','Body'],
+['饱','bǎo','full (stomach)','o','饱:bǎo:full','Body'],
+['饿','è','hungry','o','饿:è:hungry','Body'],
+['洗手间','xǐshǒujiān','bathroom','h','洗:xǐ:wash,手:shǒu:hand,间:jiān:interval; between','Body'],
+// ---- FEELINGS ----
+['微笑','wēixiào','to smile','h','微:wēi:tiny,笑:xiào:laugh','Feelings'],
+['大笑','dàxiào','to laugh out loud','h','大:dà:big,笑:xiào:laugh','Feelings'],
+['生气','shēngqì','angry','v','生:shēng:generate; born,气:qì:air; temper','Feelings'],
+['自豪','zìháo','proud','h','自:zì:self,豪:háo:grand','Feelings'],
+['伤心','shāngxīn','sad','v','伤:shāng:wound,心:xīn:heart','Feelings'],
+['内疚','nèijiù','guilty','h','内:nèi:inner,疚:jiù:remorse','Feelings'],
+['懒惰','lǎnduò','lazy','p','懒:lǎn:lazy,惰:duò:idle','Feelings'],
+['激动','jīdòng','excited','h','激:jī:surge,动:dòng:move','Feelings'],
+['害怕','hàipà','afraid','p','害:hài:harm,怕:pà:fear','Feelings'],
+['恶心','ěxin','disgusting','v','恶:ě:nauseate,心:xīn:heart','Feelings'],
+['惊喜','jīngxǐ','pleasant surprise','p','惊:jīng:startle,喜:xǐ:joy','Feelings'],
+['孤单','gūdān','lonely','p','孤:gū:solitary,单:dān:list; single','Feelings'],
+['尴尬','gāngà','embarrassed','p','尴:gān:awkward,尬:gà:awkward','Feelings'],
+['快乐','kuàilè','happy (occasions)','p','快:kuài:fast; glad,乐:lè:joy','Feelings'],
+['高兴','gāoxìng','happy, glad','p','高:gāo:tall; high,兴:xìng:mood; interest','Feelings'],
+['开心','kāixīn','happy (mood)','v','开:kāi:open,心:xīn:heart','Feelings'],
+['感到','gǎndào','to feel','r','感:gǎn:sense,到:dào:arrive; to','Feelings'],
+['无聊','wúliáo','bored','h','无:wú:without,聊:liáo:chat; interest','Feelings'],
+['担心','dānxīn','to worry','v','担:dān:carry,心:xīn:heart','Feelings'],
+['吃醋','chīcù','jealous (romance)','v','吃:chī:eat,醋:cù:vinegar','Feelings'],
+];
+
+const MOL3 = [
+// ---- DAILY ----
+['起床','qǐchuáng','to get up','v','起:qǐ:rise,床:chuáng:bed','Daily'],
+['祈祷','qídǎo','to pray','p','祈:qí:pray,祷:dǎo:pray','Daily'],
+['洗澡','xǐzǎo','to shower','v','洗:xǐ:wash,澡:zǎo:bath','Daily'],
+['做饭','zuòfàn','to cook','v','做:zuò:do; make,饭:fàn:meal; rice','Daily'],
+['上班','shàngbān','to go to work','v','上:shàng:up; on,班:bān:shift; class','Daily'],
+['下班','xiàbān','to get off work','v','下:xià:down; off,班:bān:shift; class','Daily'],
+['上学','shàngxué','to go to school','v','上:shàng:up; on,学:xué:study','Daily'],
+['放学','fàngxué','school lets out','v','放:fàng:release; put,学:xué:study','Daily'],
+['上课','shàngkè','class starts; attend class','v','上:shàng:up; on,课:kè:lesson','Daily'],
+['下课','xiàkè','class ends','v','下:xià:down; off,课:kè:lesson','Daily'],
+['送','sòng','to drop off; give','o','送:sòng:send; see off','Daily'],
+['休息','xiūxi','to rest','p','休:xiū:rest,息:xī:breathe; rest','Daily'],
+['睡觉','shuìjiào','to sleep','v','睡:shuì:sleep,觉:jiào:sleep','Daily'],
+['看书','kànshū','to read (books)','v','看:kàn:look; read,书:shū:book','Daily'],
+['报纸','bàozhǐ','newspaper','h','报:bào:report,纸:zhǐ:paper','Daily'],
+['跑步','pǎobù','to run, jog','v','跑:pǎo:run,步:bù:step','Daily'],
+['走路','zǒulù','to walk','v','走:zǒu:walk; leave,路:lù:road','Daily'],
+['聊天','liáotiān','to chat','v','聊:liáo:chat; interest,天:tiān:day; sky','Daily'],
+['打扫','dǎsǎo','to clean','p','打:dǎ:hit; do,扫:sǎo:sweep','Daily'],
+['购物','gòuwù','shopping','v','购:gòu:purchase,物:wù:object','Daily'],
+['唱歌','chànggē','to sing','v','唱:chàng:sing,歌:gē:song','Daily'],
+['跳舞','tiàowǔ','to dance','v','跳:tiào:jump,舞:wǔ:dance','Daily'],
+['玩','wán','to play','o','玩:wán:play','Daily'],
+['赢','yíng','to win','o','赢:yíng:win','Daily'],
+['输','shū','to lose','o','输:shū:lose; transport','Daily'],
+['开始','kāishǐ','to begin','p','开:kāi:open,始:shǐ:begin','Daily'],
+['停止','tíngzhǐ','to stop','p','停:tíng:halt,止:zhǐ:stop','Daily'],
+['忙','máng','busy','o','忙:máng:busy','Daily'],
+['有空','yǒukòng','free, available','v','有:yǒu:have; there is,空:kòng:free time','Daily'],
+['安静','ānjìng','quiet','p','安:ān:peace,静:jìng:still','Daily'],
+['做作业','zuò zuòyè','to do homework','v','做:zuò:do; make,作:zuò:work; do,业:yè:trade; work','Daily'],
+['下棋','xiàqí','to play chess','v','下:xià:down; off; play,棋:qí:chess','Daily'],
+['象棋','xiàngqí','chess','h','象:xiàng:elephant; image,棋:qí:chess','Daily'],
+['电视','diànshì','television','h','电:diàn:electric,视:shì:vision','Daily'],
+['手机','shǒujī','mobile phone','h','手:shǒu:hand,机:jī:machine','Daily'],
+['电话','diànhuà','telephone','h','电:diàn:electric,话:huà:speech','Daily'],
+['电脑','diànnǎo','computer','h','电:diàn:electric,脑:nǎo:brain','Daily'],
+['电梯','diàntī','elevator','h','电:diàn:electric,梯:tī:ladder','Daily'],
+['电影','diànyǐng','movie','h','电:diàn:electric,影:yǐng:shadow','Daily'],
+// ---- WORK ----
+['计划','jìhuà','plan','p','计:jì:count; plan,划:huà:mark out','Work'],
+['日程','rìchéng','schedule','h','日:rì:day; sun,程:chéng:procedure','Work'],
+['取消','qǔxiāo','to cancel','p','取:qǔ:take,消:xiāo:erase','Work'],
+['同意','tóngyì','to agree, approve','h','同:tóng:same,意:yì:meaning; intent','Work'],
+['讨论','tǎolùn','to discuss','p','讨:tǎo:examine,论:lùn:argue','Work'],
+['谈判','tánpàn','to negotiate','p','谈:tán:talk,判:pàn:judge','Work'],
+['开会','kāihuì','to hold a meeting','v','开:kāi:open,会:huì:meeting; can','Work'],
+['项目','xiàngmù','project','p','项:xiàng:item,目:mù:eye; item','Work'],
+['预算','yùsuàn','budget','h','预:yù:in advance,算:suàn:calculate','Work'],
+['招聘','zhāopìn','hiring','p','招:zhāo:beckon,聘:pìn:engage','Work'],
+['人才','réncái','talent (people)','h','人:rén:person,才:cái:ability','Work'],
+['收入','shōurù','income, revenue','p','收:shōu:receive,入:rù:enter','Work'],
+['费用','fèiyòng','expenses','p','费:fèi:fee,用:yòng:use','Work'],
+['税务','shuìwù','taxation','h','税:shuì:tax,务:wù:duty; affairs','Work'],
+['报税','bàoshuì','tax filing','v','报:bào:report,税:shuì:tax','Work'],
+['节税','jiéshuì','tax saving','v','节:jié:trim; festival,税:shuì:tax','Work'],
+['账目','zhàngmù','accounts','h','账:zhàng:account,目:mù:eye; item','Work'],
+['贸易','màoyì','trade','p','贸:mào:trade,易:yì:exchange; easy','Work'],
+['软件','ruǎnjiàn','software','h','软:ruǎn:soft,件:jiàn:item counter','Work'],
+['人工智能','réngōng zhìnéng','AI','h','人:rén:person,工:gōng:work,智:zhì:wisdom,能:néng:ability; can','Work'],
+['知识','zhīshi','knowledge','p','知:zhī:know,识:shí:recognize','Work'],
+['强调','qiángdiào','to emphasize','h','强:qiáng:strong,调:diào:tone; adjust','Work'],
+['关注','guānzhù','to focus on','p','关:guān:concern; close,注:zhù:pour attention','Work'],
+['成功','chénggōng','success','v','成:chéng:become,功:gōng:achievement','Work'],
+['失败','shībài','failure','p','失:shī:lose,败:bài:defeat','Work'],
+['投资','tóuzī','to invest','v','投:tóu:throw,资:zī:capital','Work'],
+// ---- DESCRIBE ----
+['好','hǎo','good','o','好:hǎo:good','Describe'],
+['多','duō','many','o','多:duō:many','Describe'],
+['少','shǎo','few','o','少:shǎo:few','Describe'],
+['大','dà','big','o','大:dà:big','Describe'],
+['小','xiǎo','small','o','小:xiǎo:small','Describe'],
+['高','gāo','tall, high','o','高:gāo:tall; high','Describe'],
+['矮','ǎi','short (height)','o','矮:ǎi:short','Describe'],
+['长','cháng','long','o','长:cháng:long','Describe'],
+['短','duǎn','short (length)','o','短:duǎn:short','Describe'],
+['新','xīn','new','o','新:xīn:new','Describe'],
+['旧','jiù','old (things)','o','旧:jiù:worn; old','Describe'],
+['老','lǎo','old; longtime','o','老:lǎo:old; venerable','Describe'],
+['干净','gānjìng','clean','p','干:gān:dry,净:jìng:clean','Describe'],
+['脏','zāng','dirty','o','脏:zāng:dirty','Describe'],
+['舒服','shūfu','comfortable','p','舒:shū:relax,服:fú:comfortable; serve','Describe'],
+['稳定','wěndìng','stable','p','稳:wěn:steady,定:dìng:fixed','Describe'],
+['重','zhòng','heavy','o','重:zhòng:heavy','Describe'],
+['轻','qīng','light (weight)','o','轻:qīng:light','Describe'],
+['快','kuài','fast','o','快:kuài:fast; glad','Describe'],
+['慢','màn','slow','o','慢:màn:slow','Describe'],
+['冷','lěng','cold','o','冷:lěng:cold','Describe'],
+['暖和','nuǎnhuo','warm','p','暖:nuǎn:warm,和:huo:mild','Describe'],
+['凉快','liángkuai','pleasantly cool','p','凉:liáng:cool,快:kuài:fast; glad','Describe'],
+['漂亮','piàoliang','pretty','p','漂:piào:elegant,亮:liàng:bright','Describe'],
+['帅','shuài','handsome','o','帅:shuài:dashing','Describe'],
+['丑','chǒu','ugly','o','丑:chǒu:ugly','Describe'],
+['可爱','kě\u2019ài','cute','h','可:kě:able-to,爱:ài:love','Describe'],
+['重要','zhòngyào','important','h','重:zhòng:heavy,要:yào:want; essential','Describe'],
+['特别','tèbié','special','h','特:tè:special,别:bié:distinct; don\u2019t','Describe'],
+['有意思','yǒuyìsi','interesting','v','有:yǒu:have; there is,意:yì:meaning; intent,思:sī:thought','Describe'],
+['有趣','yǒuqù','fun','v','有:yǒu:have; there is,趣:qù:delight','Describe'],
+['厉害','lìhai','capable, awesome','p','厉:lì:severe,害:hài:harm','Describe'],
+['有钱','yǒuqián','rich','v','有:yǒu:have; there is,钱:qián:money','Describe'],
+['一样','yíyàng','the same','h','一:yī:one,样:yàng:kind; appearance','Describe'],
+['耐心','nàixīn','patience','h','耐:nài:endure,心:xīn:heart','Describe'],
+['聪明','cōngming','clever','p','聪:cōng:keen-eared,明:míng:bright; next','Describe'],
+['好看','hǎokàn','good-looking','h','好:hǎo:good,看:kàn:look; read','Describe'],
+['好玩','hǎowán','fun to play','h','好:hǎo:good,玩:wán:play','Describe'],
+['难看','nánkàn','ugly (hard to look at)','h','难:nán:hard; bad-to,看:kàn:look; read','Describe'],
+// ---- GLUE ----
+['会','huì','can (learned); will','o','会:huì:meeting; can','Glue'],
+['可以','kěyǐ','can (allowed)','h','可:kě:able-to,以:yǐ:by means of','Glue'],
+['能','néng','can (able)','o','能:néng:ability; can','Glue'],
+['要','yào','to want; need','o','要:yào:want; essential','Glue'],
+['想','xiǎng','would like; think','o','想:xiǎng:think; wish','Glue'],
+['必须','bìxū','must','p','必:bì:certainly,须:xū:must','Glue'],
+['应该','yīnggāi','should','p','应:yīng:ought,该:gāi:should','Glue'],
+['不用','búyòng','no need to','v','不:bù:not,用:yòng:use','Glue'],
+['不','bù','not','o','不:bù:not','Glue'],
+['没有','méiyǒu','did not; not have','v','没:méi:not (past),有:yǒu:have; there is','Glue'],
+['别','bié','don\u2019t (command)','o','别:bié:distinct; don\u2019t','Glue'],
+['也','yě','also','o','也:yě:also','Glue'],
+['很','hěn','very (default glue)','o','很:hěn:very','Glue'],
+['太','tài','too, so','o','太:tài:too; utmost','Glue'],
+['非常','fēicháng','extremely','h','非:fēi:not; extra-,常:cháng:usual','Glue'],
+['最','zuì','the most','o','最:zuì:most','Glue'],
+['有点','yǒudiǎn','a bit too (complaint)','v','有:yǒu:have; there is,点:diǎn:point; order','Glue'],
+['一点','yìdiǎn','a little more (request)','h','一:yī:one,点:diǎn:point; order','Glue'],
+['通常','tōngcháng','usually','h','通:tōng:through,常:cháng:usual','Glue'],
+['差点','chàdiǎn','almost','v','差:chà:lack; differ,点:diǎn:point; order','Glue'],
+['大概','dàgài','probably','h','大:dà:big,概:gài:approximate','Glue'],
+['宁愿','nìngyuàn','would rather','h','宁:nìng:prefer,愿:yuàn:wish','Glue'],
+['一起','yìqǐ','together','h','一:yī:one,起:qǐ:rise','Glue'],
+['因为','yīnwèi','because','h','因:yīn:cause,为:wèi:for','Glue'],
+['所以','suǒyǐ','therefore','h','所:suǒ:place; that-which,以:yǐ:by means of','Glue'],
+['但是','dànshì','but','h','但:dàn:but,是:shì:is','Glue'],
+['虽然','suīrán','although','h','虽:suī:although,然:rán:so; -ly','Glue'],
+['如果','rúguǒ','if','h','如:rú:as if,果:guǒ:fruit; outcome','Glue'],
+['其实','qíshí','actually','h','其:qí:its; that,实:shí:real','Glue'],
+['当然','dāngrán','of course','h','当:dāng:right at,然:rán:so; -ly','Glue'],
+['原来','yuánlái','so THAT\u2019S why','h','原:yuán:origin,来:lái:come','Glue'],
+['可能','kěnéng','maybe','h','可:kě:able-to,能:néng:ability; can','Glue'],
+['真的','zhēnde','really','s','真:zhēn:true,的:de:belonging-marker','Glue'],
+['没问题','méi wèntí','no problem','v','没:méi:not (past),问:wèn:ask,题:tí:topic','Glue'],
+['随便','suíbiàn','as you like; whatever','v','随:suí:follow,便:biàn:convenience','Glue'],
+['改天','gǎitiān','some other day','v','改:gǎi:change,天:tiān:day; sky','Glue'],
+['了','le','done / changed marker','o','了:le:done; changed','Glue'],
+['吗','ma','question mark, spoken','o','吗:ma:question tag','Glue'],
+['的','de','belonging-marker','o','的:de:belonging-marker','Glue'],
+['什么','shénme','what','p','什:shén:what,么:me:tail syllable','Glue'],
+['谁','shéi','who','o','谁:shéi:who','Glue'],
+['哪里','nǎlǐ','where','h','哪:nǎ:which,里:lǐ:mile; inside','Glue'],
+['为什么','wèishénme','why','h','为:wèi:for,什:shén:what,么:me:tail syllable','Glue'],
+['怎么','zěnme','how','p','怎:zěn:how,么:me:tail syllable','Glue'],
+['多少','duōshao','how much','p','多:duō:many,少:shǎo:few','Glue'],
+['还是','háishì','or (in questions)','h','还:hái:still; also,是:shì:is','Glue'],
+['请问','qǐngwèn','may I ask','v','请:qǐng:please; invite,问:wèn:ask','Glue'],
+['谢谢','xièxie','thank you','p','谢:xiè:thank','Glue'],
+['再见','zàijiàn','goodbye','v','再:zài:again,见:jiàn:see','Glue'],
+['对不起','duìbuqǐ','sorry','r','对:duì:correct; face,不:bù:not,起:qǐ:rise','Glue'],
+['欢迎','huānyíng','welcome','p','欢:huān:joyous,迎:yíng:greet','Glue'],
+['加油','jiāyóu','go! (add oil)','v','加:jiā:add,油:yóu:oil','Glue'],
+// ---- ANIMALS ----
+['袋鼠','dàishǔ','kangaroo','h','袋:dài:pocket,鼠:shǔ:mouse','Animals'],
+['狮子','shīzi','lion','s','狮:shī:lion,子:zi:thing-maker','Animals'],
+['鳄鱼','èyú','crocodile','h','鳄:è:croc,鱼:yú:fish','Animals'],
+['猩猩','xīngxing','gorilla','p','猩:xīng:ape','Animals'],
+['长颈鹿','chángjǐnglù','giraffe','h','长:cháng:long,颈:jǐng:neck,鹿:lù:deer','Animals'],
+['斑马','bānmǎ','zebra','h','斑:bān:stripe,马:mǎ:horse','Animals'],
+['猎豹','lièbào','cheetah','h','猎:liè:hunt,豹:bào:leopard','Animals'],
+['蛇','shé','snake','o','蛇:shé:snake','Animals'],
+['河马','hémǎ','hippo','h','河:hé:river,马:mǎ:horse','Animals'],
+['犀牛','xīniú','rhino','h','犀:xī:rhino,牛:niú:cow','Animals'],
+['大象','dàxiàng','elephant','h','大:dà:big,象:xiàng:elephant; image','Animals'],
+['狗','gǒu','dog','o','狗:gǒu:dog','Animals'],
+['猫','māo','cat','o','猫:māo:cat','Animals'],
+// ---- FACTORY EXTRAS ----
+['学生','xuésheng','student','m','学:xué:study,生:shēng:person; born','Factory'],
+['学习','xuéxí','to study','p','学:xué:study,习:xí:practice','Factory'],
+['大学','dàxué','university','h','大:dà:big,学:xué:study','Factory'],
+['中学','zhōngxué','middle school','h','中:zhōng:middle,学:xué:study','Factory'],
+['小学','xiǎoxué','primary school','h','小:xiǎo:small,学:xué:study','Factory'],
+['科学','kēxué','science','h','科:kē:branch; discipline,学:xué:study','Factory'],
+['文学','wénxué','literature','h','文:wén:writing; culture,学:xué:study','Factory'],
+['数学','shùxué','mathematics','h','数:shù:number,学:xué:study','Factory'],
+['历史','lìshǐ','history','h','历:lì:passage; calendar,史:shǐ:record','Factory'],
+['事情','shìqing','matter, affair','p','事:shì:matter,情:qíng:situation; feeling','Factory'],
+['世界','shìjiè','world','p','世:shì:generation; world,界:jiè:boundary','Factory'],
+['天气','tiānqì','weather','h','天:tiān:day; sky,气:qì:air; temper','Factory'],
+['中文','Zhōngwén','Chinese (language)','h','中:zhōng:middle,文:wén:writing; culture','Factory'],
+['汉语','Hànyǔ','Chinese (spoken)','h','汉:hàn:Han,语:yǔ:language','Factory'],
+['英文','Yīngwén','English','h','英:yīng:hero; England,文:wén:writing; culture','Factory'],
+['名字','míngzi','name','s','名:míng:name,字:zì:character','Factory'],
+['问题','wèntí','question, problem','p','问:wèn:ask,题:tí:topic','Factory'],
+['意思','yìsi','meaning','p','意:yì:meaning; intent,思:sī:thought','Factory'],
+['例子','lìzi','example','s','例:lì:instance,子:zi:thing-maker','Factory'],
+['故事','gùshi','story','h','故:gù:past; reason,事:shì:matter','Factory'],
+['人口','rénkǒu','population','h','人:rén:person,口:kǒu:mouth; opening','Factory'],
+['路口','lùkǒu','intersection','h','路:lù:road,口:kǒu:mouth; opening','Factory'],
+['门口','ménkǒu','doorway','h','门:mén:door,口:kǒu:mouth; opening','Factory'],
+['户口','hùkǒu','household registration','h','户:hù:household; account,口:kǒu:mouth; opening','Factory'],
+['桌子','zhuōzi','table','s','桌:zhuō:table,子:zi:thing-maker','Factory'],
+['椅子','yǐzi','chair','s','椅:yǐ:chair,子:zi:thing-maker','Factory'],
+['杯子','bēizi','cup','s','杯:bēi:cup,子:zi:thing-maker','Factory'],
+['买卖','mǎimài','trade (buy-sell)','p','买:mǎi:buy,卖:mài:sell','Factory'],
+['早晚','zǎowǎn','sooner or later','p','早:zǎo:early,晚:wǎn:late; evening','Factory'],
+['大小','dàxiǎo','size','p','大:dà:big,小:xiǎo:small','Factory'],
+['吃饭','chīfàn','to eat (a meal)','v','吃:chī:eat,饭:fàn:meal; rice','Factory'],
+['吃完','chīwán','to finish eating','r','吃:chī:eat,完:wán:finish','Factory'],
+['看见','kànjiàn','to see (catch sight)','r','看:kàn:look; read,见:jiàn:see','Factory'],
+['听懂','tīngdǒng','to understand (by ear)','r','听:tīng:listen,懂:dǒng:understand','Factory'],
+['明白','míngbai','to understand, clear','p','明:míng:bright; next,白:bái:white; plain','Factory'],
+];
+
+// Additions from Sree's Construction System doc, Jul 2026
+const MOL4 = [
+['鸡蛋','jīdàn','egg','h','鸡:jī:chicken,蛋:dàn:egg','Food'],
+['牛肉','niúròu','beef','h','牛:niú:cow,肉:ròu:meat','Food'],
+['羊肉','yángròu','mutton','h','羊:yáng:sheep,肉:ròu:meat','Food'],
+['苹果汁','píngguǒzhī','apple juice','h','苹:píng:apple,果:guǒ:fruit,汁:zhī:juice','Drink'],
+['红茶','hóngchá','black tea (red tea)','h','红:hóng:red,茶:chá:tea','Drink'],
+['白酒','báijiǔ','baijiu liquor','h','白:bái:white; plain,酒:jiǔ:alcohol','Drink'],
+['可乐','kělè','cola','l','可:kě:(sound; able-to),乐:lè:(sound; joy)','Drink'],
+['沙发','shāfā','sofa','l','沙:shā:(sound; sand),发:fā:(sound; emit)','Factory'],
+['小狗','xiǎogǒu','puppy','h','小:xiǎo:small,狗:gǒu:dog','Animals'],
+['帮助','bāngzhù','to help','p','帮:bāng:help,助:zhù:assist','Factory'],
+['上下','shàngxià','up and down; roughly','p','上:shàng:up; on,下:xià:down; off','Factory'],
+['左右','zuǒyòu','left-right; approximately','p','左:zuǒ:left,右:yòu:right','Factory'],
+['找到','zhǎodào','to find (search + succeed)','r','找:zhǎo:search,到:dào:arrive; to','Factory'],
+['做完','zuòwán','to finish doing','r','做:zuò:do; make,完:wán:finish','Factory'],
+['长大','zhǎngdà','to grow up','r','长:zhǎng:grow (note - cháng means long),大:dà:big','Factory'],
+['上来','shànglái','to come up','d','上:shàng:up; on,来:lái:come','Factory'],
+['下去','xiàqù','to go down','d','下:xià:down; off,去:qù:go','Factory'],
+['回来','huílái','to come back','d','回:huí:return,来:lái:come','Factory'],
+['出来','chūlái','to come out','d','出:chū:out,来:lái:come','Factory'],
+['进去','jìnqù','to go in','d','进:jìn:enter,去:qù:go','Factory'],
+['工人','gōngrén','worker','m','工:gōng:work,人:rén:person','Jobs'],
+['病人','bìngrén','patient','m','病:bìng:illness,人:rén:person','Jobs'],
+['作者','zuòzhě','author','m','作:zuò:work; do,者:zhě:one who','Jobs'],
+['教室','jiàoshì','classroom','g','教:jiào:teach,室:shì:room','Place'],
+['周末','zhōumò','weekend','h','周:zhōu:week; cycle,末:mò:end','Time'],
+['帽子','màozi','hat','s','帽:mào:hat,子:zi:thing-maker','Shop'],
+['反对','fǎnduì','to oppose','v','反:fǎn:against,对:duì:correct; face','Work'],
+['面对','miànduì','to face (a situation)','v','面:miàn:face; surface,对:duì:correct; face','Work'],
+];
+
+const BOND={h:'kind + thing',p:'twins glued',v:'do + what',r:'do + result',d:'do + direction',m:'person-maker',g:'place-maker',s:'thing-maker',o:'stands alone',l:'sound loan'};
+const BASE=[...MOL,...MOL2,...MOL3,...MOL4].map(m=>({hz:m[0],py:m[1],en:m[2],b:m[3],parts:m[4],theme:m[5]}));
+let allMol=[]; let EL={}; let val={}; let elThemes={}; let hotEls=new Set(); let sel=null; let showAll=false; let theme='All'; let query='';
+
+function partList(m){ return m.parts? m.parts.split(',').map(s=>{const[a,b,c]=s.split(':');return{hz:a,py:b,en:c};}):[]; }
+function rebuild(){
+  allMol=[...BASE];
+  EL={}; val={}; elThemes={};
+  allMol.forEach(m=>partList(m).forEach(p=>{
+    const k=p.hz+'|'+p.py;
+    if(!EL[k]) EL[k]={hz:p.hz,py:p.py,en:p.en};
+    if(m.b!=='o' && partList(m).length>1) val[k]=(val[k]||0)+1;
+    (elThemes[k]=elThemes[k]||new Set()).add(m.theme);
+  }));
+  document.getElementById('counts').textContent=
+    Object.keys(EL).length+' parts · '+allMol.length+' words';
+  renderAll();
+}
+const strip=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const norm=s=>strip(s).replace(/[0-9]/g,'').replace(/v/g,'u').replace(/[^a-z\u4e00-\u9fff]/g,'');
+const toneMark=py=>{const t={'\u0304':'ˉ','\u0301':'ˊ','\u030c':'ˇ','\u0300':'ˋ'};for(const[d,g]of Object.entries(t))if(py.normalize('NFD').includes(d))return g;return '·';};
+
+function themes(){ const t=new Set(['All']); allMol.forEach(m=>t.add(m.theme)); return [...t]; }
+function renderChips(){
+  const c=document.getElementById('themechips'); c.innerHTML='';
+  themes().forEach(t=>{ const d=document.createElement('span'); d.className='fchip'+(theme===t?' on':'');
+    d.textContent=t; d.onclick=()=>{theme=(theme===t)?'All':t; renderAll();}; c.appendChild(d); });
+}
+function elMatch(k){ const e=EL[k];
+  if(theme!=='All' && !(elThemes[k]&&elThemes[k].has(theme))) return false;
+  if(!query) return true;
+  return norm(e.py).includes(query)||e.en.toLowerCase().includes(strip(query))||e.hz.includes(query)||hotEls.has(k); }
+function molMatch(m){
+  const th=m.theme;
+  if(theme!=='All'&&th!==theme) return false;
+  if(sel && !partList(m).some(p=>p.hz+'|'+p.py===sel)) return false;
+  if(query && !(norm(m.py).includes(query)||m.en.toLowerCase().includes(strip(query))||m.hz.includes(query))) return false;
+  return true;
+}
+function computeHot(){ hotEls=new Set();
+  if(!query) return;
+  allMol.forEach(m=>{ if(norm(m.py).includes(query)||m.en.toLowerCase().includes(strip(query))||m.hz.includes(query))
+    partList(m).forEach(p=>hotEls.add(p.hz+'|'+p.py)); });
+}
+function renderGrid(){
+  const g=document.getElementById('grid'); g.innerHTML='';
+  let keys=Object.keys(EL).filter(elMatch).sort((a,b)=>(val[b]||0)-(val[a]||0)||strip(EL[a].py).localeCompare(strip(EL[b].py)));
+  const total=keys.length;
+  if(!showAll && !query) keys=keys.slice(0,60);
+  keys.forEach(k=>{ const e=EL[k], d=document.createElement('div');
+    d.className='el'+(sel===k?' sel':''); 
+    d.innerHTML=`<span class="val">${val[k]||''}</span><span class="tone">${toneMark(e.py)}</span>
+      <div class="hz">${e.hz}</div><div class="py">${e.py}</div><div class="en">${e.en.split(';')[0]}</div>`;
+    d.onclick=()=>pick(k); g.appendChild(d); });
+  document.getElementById('moreBtn').style.display=(query||total<=60)?'none':'inline-block';
+  document.getElementById('moreBtn').textContent=showAll?'collapse to top 60':'show all '+total+' parts';
+}
+function renderMols(){
+  const box=document.getElementById('mols'); box.innerHTML='';
+  const list=allMol.map((m,i)=>[m,i]).filter(([m])=>molMatch(m));
+  document.getElementById('molcount').textContent=list.length+' words shown';
+  const bn=document.getElementById('banner');
+  if(sel){ bn.className='banner on';
+    document.getElementById('bannertext').innerHTML=`Showing only words built with <b>${EL[sel].hz} ${EL[sel].py}</b>`; }
+  else bn.className='banner';
+  list.forEach(([m,i])=>{
+    const d=document.createElement('div'); d.className='mol';
+    const eq=partList(m).map(p=>`<span class="cn">${p.hz}</span> ${p.py} (${p.en.split(';')[0]})`).join(' + ');
+    d.innerHTML=`<div class="top"><span class="hz">${m.hz}</span><span class="py">${m.py}</span>
+      <span class="en">${m.en}</span><span class="chip b-${m.b}">${BOND[m.b]}</span>
+      </div>
+      <div class="form"><span class="atom-eq">${eq||'stands alone'}</span></div>`;
+    d.onclick=()=>d.classList.toggle('open');
+    box.appendChild(d);
+  });
+}
+function renderIso(){
+  const box=document.getElementById('isocards'); box.innerHTML='';
+  const groups={};
+  Object.keys(EL).forEach(k=>{ const s=strip(EL[k].py).replace(/[^a-z]/g,''); (groups[s]=groups[s]||[]).push(k); });
+  const hot=Object.entries(groups).filter(([,ks])=>new Set(ks.map(k=>EL[k].hz)).size>=3)
+    .sort((a,b)=>b[1].length-a[1].length).slice(0,8);
+  hot.forEach(([syl,ks])=>{
+    const d=document.createElement('div'); d.className='iso';
+    const byTone={};
+    ks.forEach(k=>{ const t=toneMark(EL[k].py); (byTone[t]=byTone[t]||[]).push(k); });
+    let cols='';
+    ['ˉ','ˊ','ˇ','ˋ','·'].forEach(t=>{ if(!byTone[t]) return;
+      cols+=`<div class="tcol"><div class="t">${byTone[t][0]?EL[byTone[t][0]].py:syl} ${t}</div>`+
+        byTone[t].map(k=>{ const anchor=allMol.find(m=>partList(m).length>1&&partList(m).some(p=>p.hz+'|'+p.py===k));
+          return `<div class="m"><span class="cn">${EL[k].hz}</span> ${EL[k].py} · ${EL[k].en.split(';')[0]} · <span class="anchor">${anchor?anchor.hz+' '+anchor.py:'flies solo'}</span></div>`;}).join('')+'</div>'; });
+    d.innerHTML=`<h3>${syl} <small>· ${new Set(ks.map(k=>EL[k].hz)).size} different parts share this sound</small></h3><div class="tones">${cols}</div>`;
+    box.appendChild(d);
+  });
+}
+function renderAll(){ computeHot(); renderChips(); renderGrid(); renderMols(); renderIso(); }
+function pick(k){ sel=(sel===k)?null:k;
+  if(sel && theme!=='All' && !(elThemes[k]&&elThemes[k].has(theme))) theme='All';
+  renderChips(); renderGrid(); renderMols();
+}
+document.getElementById('q').addEventListener('input',e=>{query=norm(e.target.value.trim()); sel=null; if(query) theme='All'; renderAll();});
+document.getElementById('moreBtn').onclick=()=>{showAll=!showAll; renderGrid(); if(!showAll) document.getElementById('sec-parts').scrollIntoView();};
+
+rebuild();
+</script>
+</body>
+</html>
